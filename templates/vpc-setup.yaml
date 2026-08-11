@@ -1,1 +1,124 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: Week 2 AWS VPC Networking Infrastructure
+
+Resources:
+
+# VPC
+
+Week2VPC:
+Type: AWS::EC2::VPC
+Properties:
+CidrBlock: 10.0.0.0/16
+EnableDnsSupport: true
+EnableDnsHostnames: true
+Tags:
+- Key: Name
+Value: week2-vpc
+
+# Internet Gateway
+
+InternetGateway:
+Type: AWS::EC2::InternetGateway
+Properties:
+Tags:
+- Key: Name
+Value: week2-igw
+
+# Attach Internet Gateway to VPC
+
+AttachInternetGateway:
+Type: AWS::EC2::VPCGatewayAttachment
+Properties:
+VpcId: !Ref Week2VPC
+InternetGatewayId: !Ref InternetGateway
+
+# Public Subnet
+
+PublicSubnet:
+Type: AWS::EC2::Subnet
+Properties:
+VpcId: !Ref Week2VPC
+CidrBlock: 10.0.1.0/24
+AvailabilityZone: eu-north-1a
+MapPublicIpOnLaunch: true
+Tags:
+- Key: Name
+Value: public-subnet
+
+# Private Subnet
+
+PrivateSubnet:
+Type: AWS::EC2::Subnet
+Properties:
+VpcId: !Ref Week2VPC
+CidrBlock: 10.0.2.0/24
+AvailabilityZone: eu-north-1a
+MapPublicIpOnLaunch: false
+Tags:
+- Key: Name
+Value: private-subnet
+
+# Public Route Table
+
+PublicRouteTable:
+Type: AWS::EC2::RouteTable
+Properties:
+VpcId: !Ref Week2VPC
+Tags:
+- Key: Name
+Value: public-route-table
+
+# Public Route
+
+PublicRoute:
+Type: AWS::EC2::Route
+DependsOn: AttachInternetGateway
+Properties:
+RouteTableId: !Ref PublicRouteTable
+DestinationCidrBlock: 0.0.0.0/0
+GatewayId: !Ref InternetGateway
+
+# Associate Public Subnet
+
+PublicSubnetRouteTableAssociation:
+Type: AWS::EC2::SubnetRouteTableAssociation
+Properties:
+SubnetId: !Ref PublicSubnet
+RouteTableId: !Ref PublicRouteTable
+
+# Private Route Table
+
+PrivateRouteTable:
+Type: AWS::EC2::RouteTable
+Properties:
+VpcId: !Ref Week2VPC
+Tags:
+- Key: Name
+Value: private-route-table
+
+# Associate Private Subnet
+
+PrivateSubnetRouteTableAssociation:
+Type: AWS::EC2::SubnetRouteTableAssociation
+Properties:
+SubnetId: !Ref PrivateSubnet
+RouteTableId: !Ref PrivateRouteTable
+
+Outputs:
+
+VPCId:
+Description: VPC ID
+Value: !Ref Week2VPC
+
+PublicSubnetId:
+Description: Public Subnet ID
+Value: !Ref PublicSubnet
+
+PrivateSubnetId:
+Description: Private Subnet ID
+Value: !Ref PrivateSubnet
+
+InternetGatewayId:
+Description: Internet Gateway ID
+Value: !Ref InternetGateway
 
